@@ -1,0 +1,96 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+
+    }
+}
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10' 
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.10'
+    id 'net.mamoe.mirai-console' version "${MIRAI_VERSION}"
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        maven { url "https://repo.mirai.mamoe.net/snapshots" }
+    }
+}
+
+subprojects {
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
+    apply plugin: 'net.mamoe.mirai-console'
+    apply plugin: 'eclipse'
+    apply plugin: 'java'
+    
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    mirai { jvmTarget = JavaVersion.VERSION_11}
+    
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+    
+    artifacts {
+        archives sourcesJar
+    }
+    
+    dependencies {
+        compileOnly 'org.projectlombok:lombok:1.18.4'
+        annotationProcessor 'org.projectlombok:lombok:1.18.4'
+
+        testImplementation "junit:junit:4.11"
+    }
+}
+
+project(":fleet-plugin") {
+
+    version = BUILD_PLUGIN_VERSION
+
+    eclipse.project.name = rootProject.name + "-plugin"
+
+    dependencies {
+        implementation project(":fleet-share")
+    }
+
+}
+
+project(":fleet-share") {
+    apply plugin: "maven-publish"
+    apply plugin: 'java-library'
+    
+    eclipse.project.name = rootProject.name + "-share"
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                // useless for jitpack: groupId = GROUP
+                artifactId = ARTIFACT_ID_START + "-share"
+                // useless for jitpack: version = VERSION
+                from components.java
+            }
+        }
+    }
+
+    dependencies {
+        api 'com.github.hundun000.mirai-fleet-framework:framework-core:0.7.0'
+    }
+}

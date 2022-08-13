@@ -1,0 +1,31 @@
+fleet-plugin/config/
+fleet-plugin/bots/
+fleet-plugin/plugins/
+fleet-plugin/data/
+fleet-plugin/logs/
+fleet-plugin/plugin-shared-libraries/
+fleet-plugin/plugin-libraries/
+
+### Eclipse ###
+.classpath
+.project
+.settings
+bin/
+
+### IDEA ###
+.idea
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
