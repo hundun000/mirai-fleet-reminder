@@ -1,6 +1,6 @@
 ### 定时提醒功能模块
 
-### 【定时】整点报时
+### 【定时】定时报时
 
 定时触发。报时文本来自配置文件。
 
@@ -8,7 +8,7 @@
 
 配置方法：
 
-手动编辑（重启后生效）`config\具体插件id\ReminderFunction\HourlyChatConfigV2.json`
+手动编辑（重启后生效）`config\具体插件id\ReminderFunction\repositories\ReminderListRepository.json`
 
 ```
 {
