@@ -6,6 +6,8 @@ fleet-plugin/logs/
 fleet-plugin/plugin-shared-libraries/
 fleet-plugin/plugin-libraries/
 
+build/
+
 ### Eclipse ###
 .classpath
 .project

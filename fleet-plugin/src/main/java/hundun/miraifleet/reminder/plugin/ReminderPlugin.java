@@ -1,20 +1,21 @@
-package com.example.bot.plugin;
+package hundun.miraifleet.reminder.plugin;
 
 import org.jetbrains.annotations.NotNull;
 
+import hundun.miraifleet.reminder.plugin.botlogic.ReminderBotLogic;
 import net.mamoe.mirai.console.extension.PluginComponentStorage;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 
 
-public class TemplatePlugin extends JavaPlugin {
-    public static final TemplatePlugin INSTANCE = new TemplatePlugin(); 
+public class ReminderPlugin extends JavaPlugin {
+    public static final ReminderPlugin INSTANCE = new ReminderPlugin(); 
     
-    TemplateBotLogic botLogic;
+    ReminderBotLogic botLogic;
     
-    public TemplatePlugin() {
+    public ReminderPlugin() {
         super(new JvmPluginDescriptionBuilder(
-                "hundun.fleet.template",
+                "hundun.fleet.reminder",
                 "0.1.0"
             )
             .build());
@@ -27,7 +28,7 @@ public class TemplatePlugin extends JavaPlugin {
     
     @Override
     public void onEnable() {
-        botLogic = new TemplateBotLogic(this);
+        botLogic = new ReminderBotLogic(this);
         botLogic.onBotLogicEnable();
     }
     
