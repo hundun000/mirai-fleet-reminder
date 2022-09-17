@@ -91,7 +91,7 @@ project(":fleet-share") {
     }
 
     dependencies {
-        api 'com.github.hundun000.mirai-fleet-framework:framework-starter:0.7.0'
+        api 'com.github.hundun000.mirai-fleet-framework:framework-starter:0.8.0-RC'
         
         api 'org.quartz-scheduler:quartz:2.3.2'
     }

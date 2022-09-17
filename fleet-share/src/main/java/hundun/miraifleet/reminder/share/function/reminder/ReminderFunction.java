@@ -1,7 +1,6 @@
 package hundun.miraifleet.reminder.share.function.reminder;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -9,7 +8,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
@@ -41,7 +39,7 @@ import net.mamoe.mirai.utils.ExternalResource;
  * @author hundun
  * Created on 2021/08/13
  */
-public class ReminderFunction extends BaseFunction<Void> {
+public class ReminderFunction extends BaseFunction {
     public static final String NAME_PART_SPLIT = "|";
     public static final String IMAGE_CODE_PREFIX = "IMAGE:";
     public static final String AUDIO_CODE_PREFIX = "AUDIO:";
@@ -66,8 +64,7 @@ public class ReminderFunction extends BaseFunction<Void> {
             baseBotLogic,
             plugin,
             characterName,
-            "ReminderFunction",
-            null
+            "ReminderFunction"
             );
         this.reminderListRepository = new SingletonDocumentRepository<>(plugin, 
                 resolveDataRepositoryFile("ReminderListRepository.json"), 
@@ -82,21 +79,20 @@ public class ReminderFunction extends BaseFunction<Void> {
     public AbstractCommand provideCommand() {
         return commandComponent;
     }
+    
+    @Override
+    public AbstractCommand provideDebugCommand() {
+        return new DebugCompositeCommandFunctionComponent();
+    }
 
     public class CompositeCommandFunctionComponent extends AbstractCompositeCommandFunctionComponent {
         public CompositeCommandFunctionComponent() {
-            super(plugin, botLogic, characterName, functionName);
+            super(plugin, botLogic, new UserLevelFunctionComponentConstructPack(characterName, functionName));
         }
 
-//        @SubCommand("查询报时")
-//        public void listHourlyChatConfig(CommandSender sender) {
-//            if (!checkCosPermission(sender)) {
-//                return;
-//            }
-//            sender.sendMessage(itemModelsToText(hourlyChatReminderItems));
-//        }
-
-        @SubCommand("查询提醒")
+        
+        @Deprecated
+        //@SubCommand("查询提醒")
         public void listReminderListChatConfig(CommandSender sender) {
             if (!checkCosPermission(sender)) {
                 return;
@@ -105,7 +101,8 @@ public class ReminderFunction extends BaseFunction<Void> {
             sender.sendMessage(itemsToText(reminderList.getItems()));
         }
 
-        @SubCommand("删除提醒")
+        @Deprecated
+        //@SubCommand("删除提醒")
         public void deleteReminderListChatConfig(CommandSender sender, int id) {
             if (!checkCosPermission(sender)) {
                 return;
@@ -115,7 +112,8 @@ public class ReminderFunction extends BaseFunction<Void> {
             sender.sendMessage("OK");
         }
 
-        @SubCommand("创建提醒")
+        @Deprecated
+        //@SubCommand("创建提醒")
         public void insertReminderListChatConfig(CommandSender sender,
                 String cornRawFomat,
                 String countRawFomat,
@@ -142,9 +140,30 @@ public class ReminderFunction extends BaseFunction<Void> {
             sender.sendMessage("OK");
         }
 
-        @SubCommand("debugClockArrive")
+        
+    }
+    
+    public class DebugCompositeCommandFunctionComponent extends AbstractCompositeCommandFunctionComponent {
+        public DebugCompositeCommandFunctionComponent() {
+            super(plugin, 
+                    botLogic, 
+                    new DebugLevelFunctionComponentConstructPack(characterName, functionName)
+                    );
+        }
+        
+        @SubCommand("list")
+        public void listReminderListChatConfig(ConsoleCommandSender sender) {
+            if (!checkCosPermission(sender)) {
+                return;
+            }
+            ReminderList reminderList  = reminderListRepository.findSingleton();
+            sender.sendMessage(itemsToText(reminderList.getItems()));
+        }
+
+
+        @SubCommand("clockArrive")
         public void debugTimerCallReminderItem(ConsoleCommandSender sender, String timeString) {
-            if (!checkAdminCommandPermission(sender)) {
+            if (!checkCosPermission(sender)) {
                 return;
             }
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年M月d日H时m分");

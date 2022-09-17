@@ -3,7 +3,6 @@ package hundun.miraifleet.reminder.plugin.botlogic;
 import hundun.miraifleet.framework.core.botlogic.BaseJavaBotLogic;
 import hundun.miraifleet.framework.starter.botlogic.function.CharacterAdminHelperFunction;
 import hundun.miraifleet.reminder.share.function.reminder.ReminderFunction;
-import hundun.miraifleet.reminder.share.function.reminder.SimpleReminderFunction;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 
 
@@ -15,7 +14,7 @@ public class ReminderBotLogic extends BaseJavaBotLogic {
 
     @Override
     protected void onFunctionsEnable() {
-        registerFunction(new SimpleReminderFunction(this, plugin, characterName, 
+        registerFunction(new ReminderFunction(this, plugin, characterName, 
                 ReminderDefaultConfigAndData.reminderListDefaultDataSupplier()
                 ));
 

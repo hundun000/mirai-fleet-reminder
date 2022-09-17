@@ -25,11 +25,4 @@ public class ReminderDefaultConfigAndData {
         };
     }
 
-
-    public static void main(String[] args) {
-        String[] a = new String[] {};
-        Object[] b = a;
-        
-    }
-
 }
