@@ -23,7 +23,6 @@ import hundun.miraifleet.framework.core.botlogic.BaseBotLogic;
 import hundun.miraifleet.framework.core.function.BaseFunction;
 import hundun.miraifleet.framework.core.function.FunctionReplyReceiver;
 import hundun.miraifleet.framework.helper.repository.SingletonDocumentRepository;
-import hundun.miraifleet.reminder.share.function.reminder.data.HourlyChatConfigV2;
 import hundun.miraifleet.reminder.share.function.reminder.data.ReminderItem;
 import hundun.miraifleet.reminder.share.function.reminder.data.ReminderList;
 import lombok.Getter;
@@ -31,6 +30,7 @@ import lombok.Setter;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.console.command.AbstractCommand;
 import net.mamoe.mirai.console.command.CommandSender;
+import net.mamoe.mirai.console.command.ConsoleCommandSender;
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.message.data.Message;
@@ -42,13 +42,11 @@ import net.mamoe.mirai.utils.ExternalResource;
  * Created on 2021/08/13
  */
 public class ReminderFunction extends BaseFunction<Void> {
-
+    public static final String NAME_PART_SPLIT = "|";
     public static final String IMAGE_CODE_PREFIX = "IMAGE:";
     public static final String AUDIO_CODE_PREFIX = "AUDIO:";
     
-    SingletonDocumentRepository<ReminderList> reminderListRepository;
-    private SingletonDocumentRepository<HourlyChatConfigV2> configRepository;
-    List<ReminderItem> hourlyChatReminderItems = new ArrayList<>();
+    private SingletonDocumentRepository<ReminderList> reminderListRepository;
     
     private Map<String, CronExpression> cronExpressionCaches = new HashMap<>();
     @Setter
@@ -62,8 +60,7 @@ public class ReminderFunction extends BaseFunction<Void> {
             BaseBotLogic baseBotLogic,
             JvmPlugin plugin,
             String characterName,
-            @Nullable Supplier<ReminderList> reminderListDefaultDataSupplier,
-            @Nullable Supplier<HourlyChatConfigV2> hourlyChatConfigDefaultDataSupplier
+            @Nullable Supplier<ReminderList> reminderListDefaultDataSupplier
             ) {
         super(
             baseBotLogic,
@@ -76,14 +73,9 @@ public class ReminderFunction extends BaseFunction<Void> {
                 resolveDataRepositoryFile("ReminderListRepository.json"), 
                 ReminderList.class, 
                 reminderListDefaultDataSupplier);
-        this.configRepository = new SingletonDocumentRepository<>(plugin, 
-                resolveFunctionConfigFile("HourlyChatConfigV2.json"), 
-                HourlyChatConfigV2.class, 
-                hourlyChatConfigDefaultDataSupplier);
         botLogic.getPluginScheduler().repeating(60 * 1000, new ReminderTimerTask());
         this.commandComponent = new CompositeCommandFunctionComponent();
         this.reminderMessageCodeParser = new ReminderMessageCodeParser();
-        initHourlyChatConfigToReminderItems();
     }
 
     @Override
@@ -96,13 +88,13 @@ public class ReminderFunction extends BaseFunction<Void> {
             super(plugin, botLogic, characterName, functionName);
         }
 
-        @SubCommand("查询报时")
-        public void listHourlyChatConfig(CommandSender sender) {
-            if (!checkCosPermission(sender)) {
-                return;
-            }
-            sender.sendMessage(itemModelsToText(hourlyChatReminderItems));
-        }
+//        @SubCommand("查询报时")
+//        public void listHourlyChatConfig(CommandSender sender) {
+//            if (!checkCosPermission(sender)) {
+//                return;
+//            }
+//            sender.sendMessage(itemModelsToText(hourlyChatReminderItems));
+//        }
 
         @SubCommand("查询提醒")
         public void listReminderListChatConfig(CommandSender sender) {
@@ -150,8 +142,8 @@ public class ReminderFunction extends BaseFunction<Void> {
             sender.sendMessage("OK");
         }
 
-        @SubCommand("debugTimerCallReminderItem")
-        public void debugTimerCallReminderItem(CommandSender sender, String timeString) {
+        @SubCommand("debugClockArrive")
+        public void debugTimerCallReminderItem(ConsoleCommandSender sender, String timeString) {
             if (!checkAdminCommandPermission(sender)) {
                 return;
             }
@@ -167,7 +159,7 @@ public class ReminderFunction extends BaseFunction<Void> {
             calendar.setTime(date);
 
             logHourlyHeatBeat(calendar);
-            hourlyChatClockArrive(calendar);
+            //hourlyChatClockArrive(calendar);
             customRemiderClockArrive(calendar);
         }
     }
@@ -186,23 +178,7 @@ public class ReminderFunction extends BaseFunction<Void> {
         return builder.toString();
     }
 
-
-
-
-
-
-    private String itemModelsToText(List<ReminderItem> items) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("items:\n");
-        for (int i = 0; i < items.size(); i++) {
-            ReminderItem item = items.get(i);
-            builder.append("id:").append(i).append("\t");
-            builder.append(item.toString()).append("\n");
-        }
-        return builder.toString();
-    }
-
-    private CronExpression getCronExpression(String cronText) {
+    protected CronExpression getCronExpression(String cronText) {
         if (!cronExpressionCaches.containsKey(cronText)) {
             try {
                 CronExpression cronExpression = new CronExpression(cronText);
@@ -216,41 +192,40 @@ public class ReminderFunction extends BaseFunction<Void> {
     }
 
 
-//    @SuppressWarnings("deprecation")
-    private void initHourlyChatConfigToReminderItems() {
-        HourlyChatConfigV2 config = configRepository.findSingleton();
 
-        if (config.getItems() != null) {
-            config.getItems().forEach(it -> {
-                hourlyChatReminderItems.add(it);
-            });
-        }
-    }
 
-    private boolean useReminderList(List<ReminderItem> items, Collection<Bot> bots, Calendar now) {
-        Iterator<ReminderItem> iterator = items.iterator();
+    protected boolean useReminderList(List<ReminderItem> items, Collection<Bot> bots, Calendar now) {
+        List<ReminderItem> needRemove = new ArrayList<>();
         boolean modified = false;
-        while (iterator.hasNext()) {
-            ReminderItem reminderItem = iterator.next();
+        for (int i = 0; i < items.size(); i++) {
+            ReminderItem reminderItem = items.get(i);
             if (!checkTimeConditions(reminderItem, now) || (reminderItem.getCount() != null && reminderItem.getCount() == 0)) {
                 continue;
             }
+            log.info(String.format("定时任务 id = %s 时间条件满足", 
+                    i
+                    ));
             for (Bot bot: bots) {
                 useReminderItem(reminderItem, bot, now);
             }
             if (reminderItem.getCount() != null && reminderItem.getCount() > 0) {
                 reminderItem.setCount(reminderItem.getCount() - 1);
-                log.info("reminderItem(ReminderMessageCodes=" + reminderItem.getReminderMessageCodes() + ") count cahnge to " + reminderItem.getCount());
+                log.info(String.format("定时任务 id = %s 次数变为 %s", 
+                        i,
+                        reminderItem.getCount()
+                        ));
                 modified = true;
                 if (reminderItem.getCount() == 0) {
-                    iterator.remove();
+                    needRemove.add(reminderItem);
                 }
             }
         }
+        items.removeAll(needRemove);
+        
         return modified;
     }
 
-    private void useReminderItem(ReminderItem reminderItem, Bot bot, Calendar now) {
+    protected void useReminderItem(ReminderItem reminderItem, Bot bot, Calendar now) {
 
         for (Group group : bot.getGroups()) {
             if (!checkCosPermission(bot, group)) {
@@ -265,7 +240,7 @@ public class ReminderFunction extends BaseFunction<Void> {
 
     }
 
-    private boolean checkTimeConditions(ReminderItem reminderItem, Calendar now) {
+    protected boolean checkTimeConditions(ReminderItem reminderItem, Calendar now) {
         Date date = now.getTime();
         CronExpression cronExpression = getCronExpression(reminderItem.getCron());
         return cronExpression != null && cronExpression.isSatisfiedBy(date);
@@ -284,19 +259,19 @@ public class ReminderFunction extends BaseFunction<Void> {
         }
     }
 
-    private void hourlyChatClockArrive(Calendar now) {
-        Collection<Bot> bots = Bot.getInstances();
-        useReminderList(hourlyChatReminderItems, bots, now);
-    }
+//    private void hourlyChatClockArrive(Calendar now) {
+//        Collection<Bot> bots = Bot.getInstances();
+//        useReminderList(hourlyChatReminderItems, bots, now);
+//    }
 
-    private void customRemiderClockArrive(Calendar now) {
+    protected void customRemiderClockArrive(Calendar now) {
         ReminderList reminderList = reminderListRepository.findSingleton();
         if (reminderList == null) {
             return;
         }
         Collection<Bot> bots = Bot.getInstances();
-        boolean modidied = useReminderList(reminderList.getItems(), bots, now);
-        if (modidied) {
+        boolean modified = useReminderList(reminderList.getItems(), bots, now);
+        if (modified) {
             reminderListRepository.saveSingleton(reminderList);
         }
 
@@ -324,9 +299,16 @@ public class ReminderFunction extends BaseFunction<Void> {
         @Nullable
         public Message parse(FunctionReplyReceiver receiver, String code) {
             if (code.startsWith(IMAGE_CODE_PREFIX)) {
-                String fileName = code.substring(IMAGE_CODE_PREFIX.length());
+                String namePart = code.substring(IMAGE_CODE_PREFIX.length());
+                String[] fileNameCandidates = namePart.split(NAME_PART_SPLIT);
+                int usingIndex = (int) Math.random() * fileNameCandidates.length;
+                String fileName = fileNameCandidates[usingIndex];
                 File file = resolveFunctionDataFile(IMAGE_FOLDER + fileName);
-                log.info(String.format("ReminderMessageCodeParser using %s, exists = %s", fileName, file.exists()));
+                log.info(String.format("ReminderMessageCodeParser using %s%s, exists = %s", 
+                        fileName, 
+                        fileNameCandidates.length > 1 ? (" from random size" + fileNameCandidates.length) : "",
+                        file.exists()
+                        ));
                 if (!file.exists()) {
                     return null;
                 }
@@ -356,7 +338,7 @@ public class ReminderFunction extends BaseFunction<Void> {
                 }
                 Calendar now = Calendar.getInstance();
                 logHourlyHeatBeat(now);
-                hourlyChatClockArrive(now);
+                //hourlyChatClockArrive(now);
                 customRemiderClockArrive(now);
             } catch (Exception e) {
                 log.error("ReminderTimerTask error:", e);
