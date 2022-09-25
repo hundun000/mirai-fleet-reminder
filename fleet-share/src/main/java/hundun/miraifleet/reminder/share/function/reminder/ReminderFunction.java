@@ -321,6 +321,7 @@ public class ReminderFunction extends BaseFunction {
                 String namePart = code.substring(IMAGE_CODE_PREFIX.length());
                 String[] fileNameCandidates = namePart.split(NAME_PART_SPLIT);
                 int usingIndex = (int) Math.random() * fileNameCandidates.length;
+                
                 String fileName = fileNameCandidates[usingIndex];
                 File file = resolveFunctionDataFile(IMAGE_FOLDER + fileName);
                 log.info(String.format("ReminderMessageCodeParser using %s%s, exists = %s", 
@@ -328,15 +329,21 @@ public class ReminderFunction extends BaseFunction {
                         fileNameCandidates.length > 1 ? (" from random size" + fileNameCandidates.length) : "",
                         file.exists()
                         ));
+                
                 if (!file.exists()) {
                     return null;
                 }
                 var externalResource = ExternalResource.create(file);
                 return receiver.uploadImageAndCloseOrNotSupportPlaceholder(externalResource);
             } else if (code.startsWith(AUDIO_CODE_PREFIX)) {
-                String fileName = code.substring(AUDIO_CODE_PREFIX.length());
+                String namePart = code.substring(AUDIO_CODE_PREFIX.length());
+                String[] fileNameCandidates = namePart.split(NAME_PART_SPLIT);
+                int usingIndex = (int) Math.random() * fileNameCandidates.length;
+                
+                String fileName = fileNameCandidates[usingIndex];
                 File file = resolveFunctionDataFile(AUDIO_FOLDER + fileName);
                 log.info(String.format("ReminderMessageCodeParser using %s, exists = %s", fileName, file.exists()));
+                
                 if (!file.exists()) {
                     return null;
                 }

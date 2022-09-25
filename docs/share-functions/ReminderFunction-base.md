@@ -5,7 +5,7 @@
 ```
 {
   "count" : null,
-  "reminderMessageCodes" : [ "九点到了。罗德岛全舰正处于通常航行状态。博士，整理下航程信息吧？", "IMAGE:九点.png", "AUDIO:阿米娅_交谈2.amr" ],
+  "reminderMessageCodes" : [ "九点到了。罗德岛全舰正处于通常航行状态。博士，整理下航程信息吧？", "九点_0.png|九点_1.png", "AUDIO:阿米娅_交谈2.amr" ],
   "cron" : "* 0 9 * * ?"
 }
 ```
@@ -23,6 +23,10 @@ ReminderMessageCode规则：
 - "IMAGE:name.jpg" 将发送`data\具体插件id\ReminderFunction\images\name.jpg`
 - "AUDIO:name.amr" 将发送`data\具体插件id\ReminderFunction\audios\name.amr`
 - 其他文本内容，将发送为文本
+
+更多用法：
+
+- "IMAGE:name\_0.png|name\_1.png" 随机发送`name\_0.png`或`name\_1.png`中的一个
 
 样例：
 
