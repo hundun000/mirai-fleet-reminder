@@ -25,7 +25,7 @@ items中每一个元素是一个[ReminderItem结构](./ReminderFunction-base.md)
 仅限Console环境输入，所以不需关心权限和授权。
 
 **<主指令名>: 定时提醒ReminderFunctionDebug**  
-**<子指令>: 查询报时**  
+**<子指令>: list**  
 
 简单打印报时配置，仅作为调试。
 

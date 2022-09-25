@@ -5,7 +5,7 @@
 ```
 {
   "count" : null,
-  "reminderMessageCodes" : [ "九点到了。罗德岛全舰正处于通常航行状态。博士，整理下航程信息吧？", "九点_0.png|九点_1.png", "AUDIO:阿米娅_交谈2.amr" ],
+  "reminderMessageCodes" : [ "九点到了。罗德岛全舰正处于通常航行状态。博士，整理下航程信息吧？", "IMAGE:九点_0.png|九点_1.png", "AUDIO:阿米娅_交谈2.amr" ],
   "cron" : "* 0 9 * * ?"
 }
 ```
