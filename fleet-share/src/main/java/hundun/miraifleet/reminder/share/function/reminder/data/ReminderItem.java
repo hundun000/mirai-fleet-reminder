@@ -37,7 +37,7 @@ public class ReminderItem {
                 String audioFileName,
                 String imageFileName
                 ) {
-            String cron = "* 0 " + hourCondition + " * * ?";
+            String cron = "0 0 " + hourCondition + " * * ?";
 
             return create(cron, text, null, audioFileName, imageFileName);
         }

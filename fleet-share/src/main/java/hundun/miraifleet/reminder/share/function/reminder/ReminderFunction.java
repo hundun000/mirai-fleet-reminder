@@ -40,7 +40,7 @@ import net.mamoe.mirai.utils.ExternalResource;
  * Created on 2021/08/13
  */
 public class ReminderFunction extends BaseFunction {
-    public static final String NAME_PART_SPLIT = "|";
+    public static final String NAME_PART_SPLIT = "\\|";
     public static final String IMAGE_CODE_PREFIX = "IMAGE:";
     public static final String AUDIO_CODE_PREFIX = "AUDIO:";
     
@@ -260,9 +260,13 @@ public class ReminderFunction extends BaseFunction {
     }
 
     protected boolean checkTimeConditions(ReminderItem reminderItem, Calendar now) {
-        Date date = now.getTime();
+        
+        Calendar testDateCal = Calendar.getInstance();
+        testDateCal.setTime(now.getTime());
+        testDateCal.set(Calendar.SECOND, 0);
+        
         CronExpression cronExpression = getCronExpression(reminderItem.getCron());
-        return cronExpression != null && cronExpression.isSatisfiedBy(date);
+        return cronExpression != null && cronExpression.isSatisfiedBy(testDateCal.getTime());
     }
 
 

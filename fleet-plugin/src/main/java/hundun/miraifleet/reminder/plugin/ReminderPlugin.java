@@ -16,7 +16,7 @@ public class ReminderPlugin extends JavaPlugin {
     public ReminderPlugin() {
         super(new JvmPluginDescriptionBuilder(
                 "hundun.fleet.reminder",
-                "0.1.2"
+                "0.1.3"
             )
             .build());
     }
