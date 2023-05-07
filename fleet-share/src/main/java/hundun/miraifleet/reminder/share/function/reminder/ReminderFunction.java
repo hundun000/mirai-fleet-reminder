@@ -253,7 +253,11 @@ public class ReminderFunction extends BaseFunction {
             FunctionReplyReceiver receiver = new FunctionReplyReceiver(group, log);
             if (reminderItem.getReminderMessageCodes() != null) {
                 List<Message> messages = reminderMessageCodeParser.parse(receiver, reminderItem.getReminderMessageCodes());
-                messages.forEach(it -> receiver.sendMessage(it));
+                try {
+                    messages.forEach(it -> receiver.sendMessage(it));
+                } catch (Exception e) {
+                    log.warning("ReminderTimerTask error for " + group.getId() + ":", e);
+                }
             }
         }
 
@@ -362,17 +366,15 @@ public class ReminderFunction extends BaseFunction {
     private class ReminderTimerTask extends TimerTask {
         @Override
         public void run() {
-            try {
-                if (logMinuteClockArrival) {
-                    log.info("MinuteClockArrival, this = " + Integer.toHexString(hashCode()));
-                }
-                Calendar now = Calendar.getInstance();
-                logHourlyHeatBeat(now);
-                //hourlyChatClockArrive(now);
-                customRemiderClockArrive(now);
-            } catch (Exception e) {
-                log.error("ReminderTimerTask error:", e);
+
+            if (logMinuteClockArrival) {
+                log.info("MinuteClockArrival, this = " + Integer.toHexString(hashCode()));
             }
+            Calendar now = Calendar.getInstance();
+            logHourlyHeatBeat(now);
+            //hourlyChatClockArrive(now);
+            customRemiderClockArrive(now);
+
         }
 
 
